@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "esnext",
+    "target": "esnext",
+    "sourceMap": true,
+    "declaration": true,
+    "noImplicitAny": true,
+    "removeComments": true,
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "moduleResolution": "node",
+    "lib": ["es7", "es2017", "dom"],
+    "jsx": "react",
+    "paths": {
+      "@webcarrot/router-match": ["./src/index"],
+      "@webcarrot/router-match/*": ["./src/*"]
+    }
+  },
+  "include": ["./src/**/*"],
+  "exclude": ["./dist/**/*"],
+  "esModuleInterop": true,
+  "allowSyntheticDefaultImports": true
+}

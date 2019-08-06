@@ -1,0 +1,49 @@
+{
+  "public": true,
+  "name": "@webcarrot/router-match",
+  "version": "1.0.0",
+  "description": "Match helper for @webcarrot/router",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "scripts": {
+    "clean": "rm -rf ./dist/*",
+    "build:cjs": "tsc --build ./tsconfig.cjs.json && copy-declaration-ts ./src ./dist/cjs",
+    "build:esm": "tsc --build ./tsconfig.esm.json && copy-declaration-ts ./src ./dist/esm",
+    "build": "npm run clean && npm run build:cjs && npm run build:esm",
+    "test": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webcarrot/router-match.git"
+  },
+  "keywords": [
+    "router",
+    "match",
+    "typescript",
+    "microframework",
+    "isomorphic"
+  ],
+  "author": {
+    "email": "admin@webcarrot.pl",
+    "name": "webcarrot"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/webcarrot/router-match/issues"
+  },
+  "homepage": "https://github.com/webcarrot/router-match#readme",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "devDependencies": {
+    "@types/react": "^16.8.24",
+    "@webcarrot/copy-declaration-ts": "^1.0.0",
+    "@webcarrot/router": "^1.0.2",
+    "path-to-regexp": "^3.0.0",
+    "typescript": "^3.5.3"
+  },
+  "peerDependencies": {
+    "@webcarrot/router": "^1.0.2",
+    "path-to-regexp": "^3.0.0"
+  }
+}
