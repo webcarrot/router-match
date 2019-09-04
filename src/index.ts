@@ -5,23 +5,28 @@ import {
   Build,
   Payload,
   MatchInfo,
-  Context,
   BuildCheck,
   Method,
   isPlainObject
 } from "@webcarrot/router";
 
-import { MatchParams, RouteMatchProvider, MatchParser } from "./types";
+import { MatchParams, RouteMatchProvider, MatchParser, Context } from "./types";
+
+const escapeRegExp = (string: string) =>
+  string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const matchByRegExp = <M extends MatchInfo>(
   url: URL,
   pathKeys: Key[],
-  pathRegExp: RegExp
+  pathRegExp: RegExp,
+  rootPath?: string
 ): M | false => {
   if (!url) {
     return false;
   }
-  const path = url.pathname;
+  const path = rootPath
+    ? url.pathname.replace(new RegExp(`^${escapeRegExp(rootPath)}`), "")
+    : url.pathname;
   const pathMatches = pathRegExp.exec(path);
   if (pathMatches) {
     const params = pathKeys.reduce<MatchParams>((out, key, no) => {
@@ -60,7 +65,11 @@ const matchByRegExp = <M extends MatchInfo>(
   }
 };
 
-const buildByCompiler = (input: any, compiler: PathFunction) => {
+const buildByCompiler = (
+  input: any,
+  compiler: PathFunction,
+  rootPath?: string
+) => {
   try {
     const inputParams = "params" in input ? input.params : {};
     const parsedParams = Object.keys(inputParams).reduce<{
@@ -90,7 +99,7 @@ const buildByCompiler = (input: any, compiler: PathFunction) => {
     if (input.hash) {
       url.hash = input.hash;
     }
-    return `${url.pathname}${url.search}${url.hash}`;
+    return `${rootPath || ""}${url.pathname}${url.search}${url.hash}`;
   } catch (_) {
     return false;
   }
@@ -111,7 +120,9 @@ const parsePath = <P extends Payload, M extends MatchInfo, C extends Context>(
   } else if (info instanceof RegExp) {
     const pathKeys: Key[] = [];
     const pathRegExp = pathToRegexp(info, pathKeys);
-    match.push((url: URL) => matchByRegExp<M>(url, pathKeys, pathRegExp));
+    match.push((url: URL, _, { rootPath }) =>
+      matchByRegExp<M>(url, pathKeys, pathRegExp, rootPath)
+    );
   } else if (info instanceof Object) {
     if (info.build) {
       if (info.build instanceof Function) {
@@ -133,8 +144,12 @@ const parsePath = <P extends Payload, M extends MatchInfo, C extends Context>(
     const pathKeys: Key[] = [];
     const pathRegExp = pathToRegexp(info, pathKeys);
     const compiler = pathCompiler(info);
-    match.push((url: URL) => matchByRegExp<M>(url, pathKeys, pathRegExp));
-    build.push((match: M) => buildByCompiler(match, compiler));
+    match.push((url: URL, _, { rootPath }) =>
+      matchByRegExp<M>(url, pathKeys, pathRegExp, rootPath)
+    );
+    build.push((match: M, { rootPath }) =>
+      buildByCompiler(match, compiler, rootPath)
+    );
   }
   return {
     match,
@@ -179,10 +194,17 @@ const appendMethodFields = <M>(data: M, method: Method, body: any) =>
 const makeMatch = <P extends Payload, M extends MatchInfo, C extends Context>(
   match: Array<Match<P, M, C>>,
   parse?: MatchParser<M>
-): Match<P, M, C> => async (url: URL, payload: P, context: C) => {
+): Match<P, M, C> => (url: URL, payload: P, context: C) => {
   for (let i = 0; i < match.length; i++) {
-    const out = await match[i](url, payload, context);
-    if (out !== false) {
+    const out = match[i](url, payload, context);
+    if (out instanceof Promise) {
+      return out.then(out => {
+        if (out !== false) {
+          const data = appendMethodFields(out, payload.method, payload.body);
+          return parse ? parse(data) : data;
+        }
+      });
+    } else if (out !== false) {
       const data = appendMethodFields(out, payload.method, payload.body);
       return parse ? parse(data) : data;
     }

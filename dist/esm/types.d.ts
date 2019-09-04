@@ -1,6 +1,10 @@
 import { Key, PathFunction } from "path-to-regexp";
 
-import { Match, Build, Payload, MatchInfo, Context } from "@webcarrot/router";
+import { Match, Build, Payload, MatchInfo } from "@webcarrot/router";
+
+export type Context = {
+  rootPath?: string;
+};
 
 export type MatchParams = {
   [key: string]: any;

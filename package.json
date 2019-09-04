@@ -36,14 +36,14 @@
     "registry": "https://registry.npmjs.org"
   },
   "devDependencies": {
-    "@types/react": "^16.8.24",
+    "@types/react": "^16.9.2",
     "@webcarrot/copy-declaration-ts": "^1.0.0",
-    "@webcarrot/router": "^1.0.2",
-    "path-to-regexp": "^3.0.0",
-    "typescript": "^3.5.3"
+    "@webcarrot/router": "^1.1.2",
+    "path-to-regexp": "^3.1.0",
+    "typescript": "^3.6.2"
   },
   "peerDependencies": {
-    "@webcarrot/router": "^1.0.2",
-    "path-to-regexp": "^3.0.0"
+    "@webcarrot/router": "^1.1.2",
+    "path-to-regexp": "^3.1.0"
   }
 }
