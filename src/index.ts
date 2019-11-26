@@ -1,5 +1,9 @@
-import * as pathToRegexp from "path-to-regexp";
-import { compile as pathCompiler, Key, PathFunction } from "path-to-regexp";
+import {
+  pathToRegexp,
+  compile as pathCompiler,
+  Key,
+  PathFunction
+} from "path-to-regexp";
 import {
   Match,
   Build,
@@ -56,7 +60,7 @@ const matchByRegExp = <M extends MatchInfo>(
       }
     });
     return ({
-      params,
+      ...params,
       query,
       hash: url.hash
     } as any) as M;
@@ -71,33 +75,40 @@ const buildByCompiler = (
   rootPath?: string
 ) => {
   try {
-    const inputParams = "params" in input ? input.params : {};
-    const parsedParams = Object.keys(inputParams).reduce<{
+    const { query, hash, ...params } = input || {
+      query: undefined,
+      hash: undefined
+    };
+    const parsedParams = Object.keys(params).reduce<{
       [key: string]: string;
     }>((out, key) => {
-      const value = inputParams[key];
-      if (value !== null && value !== undefined) {
+      const value = params[key];
+      if (
+        value !== null &&
+        value !== undefined &&
+        (typeof value === "string" || typeof value === "number")
+      ) {
         out[key] = `${value}`;
       }
       return out;
     }, {});
     const url = new URL(`route:${compiler(parsedParams) || "/"}`);
-    const inputQuery = "query" in input ? input.query : {};
-
-    Object.keys(inputQuery).forEach(key => {
-      const value = inputQuery[key];
-      if (value !== null && value !== undefined) {
-        if (value instanceof Array) {
-          value
-            .filter(v => v !== null && v !== undefined)
-            .forEach(v => url.searchParams.append(key, v));
-        } else {
-          url.searchParams.append(key, `${value}`);
+    if (query && query instanceof Object) {
+      Object.keys(query).forEach(key => {
+        const value = query[key];
+        if (value !== null && value !== undefined) {
+          if (value instanceof Array) {
+            value
+              .filter(v => v !== null && v !== undefined)
+              .forEach(v => url.searchParams.append(key, v));
+          } else {
+            url.searchParams.append(key, `${value}`);
+          }
         }
-      }
-    });
-    if (input.hash) {
-      url.hash = input.hash;
+      });
+    }
+    if (hash) {
+      url.hash = `${hash}`;
     }
     return `${rootPath || ""}${url.pathname}${url.search}${url.hash}`;
   } catch (_) {
@@ -194,23 +205,39 @@ const appendMethodFields = <M>(data: M, method: Method, body: any) =>
 const makeMatch = <P extends Payload, M extends MatchInfo, C extends Context>(
   match: Array<Match<P, M, C>>,
   parse?: MatchParser<M>
-): Match<P, M, C> => (url: URL, payload: P, context: C) => {
-  for (let i = 0; i < match.length; i++) {
-    const out = match[i](url, payload, context);
-    if (out instanceof Promise) {
-      return out.then(out => {
-        if (out !== false) {
-          const data = appendMethodFields(out, payload.method, payload.body);
-          return parse ? parse(data) : data;
+): Match<P, M, C> => (url: URL, payload: P, context: C) =>
+  match.reduce<Promise<M | false>>(
+    (out: Promise<M | false>, check: Match<P, M, C>) =>
+      out.then<M | false>(out => {
+        if (out) {
+          return out;
+        } else {
+          const result = check(url, payload, context);
+          if (result instanceof Promise) {
+            return result.then(out => {
+              if (out !== false) {
+                const data = appendMethodFields(
+                  out,
+                  payload.method,
+                  payload.body
+                );
+                return parse ? parse(data) : data;
+              }
+            });
+          } else if (result) {
+            const data = appendMethodFields(
+              result,
+              payload.method,
+              payload.body
+            );
+            return parse ? parse(data) : data;
+          } else {
+            return false;
+          }
         }
-      });
-    } else if (out !== false) {
-      const data = appendMethodFields(out, payload.method, payload.body);
-      return parse ? parse(data) : data;
-    }
-  }
-  return false;
-};
+      }),
+    Promise.resolve(false) as Promise<M | false>
+  );
 
 const makeBuild = <M extends MatchInfo, C extends Context>(
   build: Array<BuildCheck<M, C>>
