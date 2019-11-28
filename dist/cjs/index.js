@@ -167,7 +167,7 @@ const parseBody = (body) => {
         return out;
     }, {});
 };
-const appendMethodFields = (data, method, body) => method === "POST"
+const appendMethodFields = (data, method = "GET", body) => method === "POST"
     ? Object.assign(Object.assign({}, data), { method, body: router_1.isPlainObject(body) ? parseBody(body) : body || {} }) : Object.assign(Object.assign({}, data), { method });
 const makeMatch = (match, parse) => (url, payload, context) => match.reduce((out, check) => out.then(out => {
     if (out) {

@@ -191,7 +191,7 @@ const parseBody = (body: { [key: string]: any }): { [key: string]: any } => {
   }, {});
 };
 
-const appendMethodFields = <M>(data: M, method: Method, body: any) =>
+const appendMethodFields = <M>(data: M, method: Method = "GET", body?: any) =>
   method === "POST"
     ? {
         ...data,
