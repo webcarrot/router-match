@@ -11,10 +11,11 @@ import {
   MatchInfo,
   BuildCheck,
   Method,
-  isPlainObject
+  isPlainObject,
+  Context
 } from "@webcarrot/router";
 
-import { MatchParams, RouteMatchProvider, MatchParser, Context } from "./types";
+import { MatchParams, RouteMatchProvider, MatchParser } from "./types";
 
 const escapeRegExp = (string: string) =>
   string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -116,15 +117,15 @@ const buildByCompiler = (
   }
 };
 
-const parsePath = <P extends Payload, M extends MatchInfo, C extends Context>(
-  info: RouteMatchProvider<P, M, C>
+const parsePath = <M extends MatchInfo, C extends Context>(
+  info: RouteMatchProvider<M, C>
 ) => {
-  const match: Array<Match<P, M, C>> = [];
+  const match: Array<Match<M, C>> = [];
   const build: Array<BuildCheck<M, C>> = [];
 
   if (info instanceof Array) {
     info.forEach(el => {
-      const ret = parsePath<P, M, C>(el);
+      const ret = parsePath<M, C>(el);
       match.push(...ret.match);
       build.push(...ret.build);
     });
@@ -139,7 +140,7 @@ const parsePath = <P extends Payload, M extends MatchInfo, C extends Context>(
       if (info.build instanceof Function) {
         build.push(info.build);
       } else {
-        const ret = parsePath<P, M, C>(info.build);
+        const ret = parsePath<M, C>(info.build);
         build.push(...ret.build);
       }
     }
@@ -147,7 +148,7 @@ const parsePath = <P extends Payload, M extends MatchInfo, C extends Context>(
       if (info.match instanceof Function) {
         match.push(info.match);
       } else {
-        const ret = parsePath<P, M, C>(info.match);
+        const ret = parsePath<M, C>(info.match);
         match.push(...ret.match);
       }
     }
@@ -202,12 +203,12 @@ const appendMethodFields = <M>(data: M, method: Method, body: any) =>
         method
       };
 
-const makeMatch = <P extends Payload, M extends MatchInfo, C extends Context>(
-  match: Array<Match<P, M, C>>,
+const makeMatch = <M extends MatchInfo, C extends Context>(
+  match: Array<Match<M, C>>,
   parse?: MatchParser<M>
-): Match<P, M, C> => (url: URL, payload: P, context: C) =>
+): Match<M, C> => (url: URL, payload: Payload, context: C) =>
   match.reduce<Promise<M | false>>(
-    (out: Promise<M | false>, check: Match<P, M, C>) =>
+    (out: Promise<M | false>, check: Match<M, C>) =>
       out.then<M | false>(out => {
         if (out) {
           return out;
@@ -251,11 +252,11 @@ const makeBuild = <M extends MatchInfo, C extends Context>(
   throw new Error("Cannot build path");
 };
 
-export const make = <P extends Payload, M extends MatchInfo, C extends Context>(
-  path: RouteMatchProvider<P, M, C>,
+export const make = <M extends MatchInfo, C extends Context>(
+  path: RouteMatchProvider<M, C>,
   parse?: MatchParser<M>
 ) => {
-  const { match, build } = parsePath<P, M, C>(path);
+  const { match, build } = parsePath<M, C>(path);
   return {
     match: makeMatch(match, parse),
     build: makeBuild(build)
