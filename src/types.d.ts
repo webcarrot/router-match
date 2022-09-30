@@ -1,5 +1,3 @@
-import { Key, PathFunction } from "path-to-regexp";
-
 import { Match, Build, MatchInfo, Context } from "@webcarrot/router";
 
 export type MatchParams = {

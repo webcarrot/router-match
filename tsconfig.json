@@ -1,25 +1,31 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "module": "esnext",
-    "target": "esnext",
-    "sourceMap": true,
-    "declaration": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
-    "removeComments": true,
-    "noEmit": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "strict": true,
+    "allowUmdGlobalAccess": false,
+    "module": "ES2020",
     "moduleResolution": "node",
-    "lib": ["es7", "es2017", "dom"],
-    "jsx": "react",
-    "paths": {
-      "@webcarrot/router-match": ["./src/index"],
-      "@webcarrot/router-match/*": ["./src/*"]
-    }
+    "sourceMap": false,
+    "inlineSources": false,
+    "declaration": false,
+    "declarationMap": false,
+    "allowJs": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "target": "ES2022",
+    "removeComments": false,
+    "outDir": "./dist"
   },
-  "include": ["./src/**/*"],
-  "exclude": ["./dist/**/*"],
-  "esModuleInterop": true,
-  "allowSyntheticDefaultImports": true
+  "include": ["./src/**/*"]
 }
