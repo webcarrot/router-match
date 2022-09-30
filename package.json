@@ -3,14 +3,23 @@
   "name": "@webcarrot/router-match",
   "version": "1.3.0",
   "description": "Match helper for @webcarrot/router",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
-    "clean": "rimraf ./dist/*",
-    "build:cjs": "tsc --build ./tsconfig.cjs.json && copy-declaration-ts ./src ./dist/cjs",
-    "build:esm": "tsc --build ./tsconfig.esm.json && copy-declaration-ts ./src ./dist/esm",
-    "build": "npm run clean && npm run build:cjs && npm run build:esm",
-    "test": "tsc"
+    "clean": "rm -rf ./dist",
+    "prepack": "npm run build",
+    "postpack": "npm run clean",
+    "build": "npm run clean && rollup -c ./rollup.config.mjs",
+    "test": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
@@ -36,15 +45,17 @@
     "registry": "https://registry.npmjs.org"
   },
   "devDependencies": {
-    "@types/react": "^16.9.13",
-    "@webcarrot/copy-declaration-ts": "^1.0.0",
-    "@webcarrot/router": "^1.3.0",
-    "path-to-regexp": "^6.1.0",
-    "rimraf": "^3.0.0",
-    "typescript": "^3.7.2"
+    "@rollup/plugin-node-resolve": "^14.1.0",
+    "@rollup/plugin-typescript": "^8.5.0",
+    "@types/react": "^18.0.21",
+    "@webcarrot/router": "^1.6.1",
+    "path-to-regexp": "^6.2.1",
+    "rollup": "^2.79.1",
+    "rollup-plugin-dts": "^4.2.2",
+    "tslib": "^2.4.0",
+    "typescript": "^4.8.4"
   },
-  "peerDependencies": {
-    "@webcarrot/router": "^1.3.0",
-    "path-to-regexp": "^6.1.0"
-  }
+  "files": [
+    "dist"
+  ]
 }
