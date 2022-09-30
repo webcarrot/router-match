@@ -1,7 +1,7 @@
 {
   "public": true,
   "name": "@webcarrot/router-match",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "description": "Match helper for @webcarrot/router",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
